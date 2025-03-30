@@ -1,16 +1,26 @@
 const {spawn, exec} = require('child_process')
 const express = require('express')
 const mysql = require('mysql2')
+const secret = require('./secret.js')
 const app = express()
 
 app.use(express.static('public'))
 
+const FM_TRANSMITTER_PATH = secret.FM_TRANSMITTER_PATH
 
+// CREATE TABLE `bookmarks`
+// (
+//     `url`      varchar(255) NOT NULL,
+//     `type`     varchar(16)  NOT NULL,
+//     `title`    varchar(255) DEFAULT NULL,
+//     `duration` int(11)      DEFAULT NULL,
+//     PRIMARY KEY (`url`)
+// )
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '12345',
-    database: 'radio'
+    host: secret.dbHost,
+    user: secret.dbUser,
+    password: secret.dbPassword,
+    database: secret.dbDatabase
 })
 
 connection.connect()
@@ -64,7 +74,7 @@ function playVideo(onStartPlaying) {
     const ytVid = currVidData.type === `yt`
 
     const ffmpeg = spawn('ffmpeg', ['-i', ytVid ? 'pipe:0' : currVidData.url, '-f', 'wav', '-bitexact', '-acodec', 'pcm_s16le', '-ar', '22050', '-ac', '1', 'pipe:1']);
-    const fm_transmitter = spawn('sudo', ['/home/fm_transmitter/fm_transmitter', '-f', '100.8', '-'])
+    const fm_transmitter = spawn('sudo', [FM_TRANSMITTER_PATH, '-f', '100.8', '-'])
 
     let stopSent = false;
     currVidPlaying = {}
